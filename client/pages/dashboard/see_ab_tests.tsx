@@ -31,7 +31,7 @@ const demoElement: ABElement<string> = {
         result: "Demo result B "
     }
 }
-const ABRow = (props: { ab_element: ABElement<string> }, args) => {
+const ABRow = (props: { ab_element: ABElement<string> }, state) => {
 
     return (
         <div>
@@ -45,7 +45,7 @@ const ABRow = (props: { ab_element: ABElement<string> }, args) => {
 
 }
 
-export const RenderTestRow = (props, state) : JSX.Element => {
+export const RenderTestRow = (props, state)  => {
     return (
         <ABRow ab_element={demoElement}/>
     );
