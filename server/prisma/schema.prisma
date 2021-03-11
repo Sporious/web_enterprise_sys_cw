@@ -11,27 +11,23 @@ generator client {
 }
 
 model accounts {
-  uuid String @default(uuid()) @unique
-  userId    Int     @id @default(autoincrement())
+  id Int     @id @default(autoincrement())
   username String @unique 
   hashedPassword String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   salt String
-
 }
 
 
 model abtest { 
-  uuid  String @default(uuid()) @unique
   id Int @id @default(autoincrement())
   first String 
   second String
 }
 
 model abtestresults { 
-  uuid String @default(uuid()) @unique
-  abtest String
-  resultfirst Float
-  resultsecond Float
+  id Int @id @default(autoincrement())
+  resultfirst Int 
+  resultsecond Int 
 }

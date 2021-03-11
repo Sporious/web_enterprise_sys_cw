@@ -24,10 +24,10 @@
       "static/chunks/webpack.js",
       "static/chunks/pages/_error.js"
     ],
-    "/choose/[cid]": [
+    "/choose/[id]": [
       "static/chunks/main.js",
       "static/chunks/webpack.js",
-      "static/chunks/pages/choose/[cid].js"
+      "static/chunks/pages/choose/[id].js"
     ],
     "/login": [
       "static/chunks/main.js",
