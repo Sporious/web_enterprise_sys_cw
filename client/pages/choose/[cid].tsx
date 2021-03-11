@@ -13,13 +13,13 @@ const abChoiceElementFromUrl = url => {
 
 const allAbs = gql`
     query Query  {
-        abs   {cid ,first, second}
+        getAllAbTests  {first, second}
     }
 `;
 
 const ab = gql`
     query Query( $cid : ID!) {
-        ab ( cid : $cid ) { cid, first, second}
+        getAbTest ( cid : $cid ) { first, second}
     }
 `;
 
@@ -39,8 +39,8 @@ const ABTest = (props, state) => {
 
     console.log(data.ab)
 
-    const choice1 = abChoiceElementFromUrl(data.ab.first);
-    const choice2 = abChoiceElementFromUrl(data.ab.second);
+    const choice1 = abChoiceElementFromUrl(data.getAbTest.first);
+    const choice2 = abChoiceElementFromUrl(data.getAbTest.second);
     return (
 
         <div>
