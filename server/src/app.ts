@@ -81,19 +81,19 @@ expressApplication.put("/updateuser/:uuid", async (req, res) => {
   try {
     //is there an account to update
     let record = await prisma.accounts.findFirst({
-      where: { uuid: req.params.uuid },
+      where: { id : parseInt(req.params.id) },
     });
     if (record) {
-
       let updated = await prisma.accounts.update({
         //match on uuid from request params
-        where: { uuid: req.params.uuid },
+        where: { id : parseInt(req.params.id)},
         data: { username, hashedPassword, salt },
       });
 
       return res.json(updated);
+    } else {
+      return res.status(400);
     }
-    else {return res.status(400)}
   } catch (err) {
     console.log(err);
     return res.status(400).json(err);
@@ -103,14 +103,32 @@ expressApplication.put("/updateuser/:uuid", async (req, res) => {
 //delete
 expressApplication.delete("/deleteuser/:uuid", async (req, res) => {
   try {
-
     let record = await prisma.accounts.delete({
-      where: { uuid: req.params.uuid },
+      where: {id : parseInt(req.params.id) },
     });
     return res.json(record);
   } catch (err) {
     console.log(err);
     return res.status(400).json(err);
+  }
+});
+
+//login
+expressApplication.post("/login", async (req, res) => {
+  const body = req.body;
+  const user = await prisma.accounts.findUnique({
+    where: { username: body.username },
+  });
+  if (user) {
+    const validPassword = await bcrypt.compare(
+      body.password,
+      user.hashedPassword
+    );
+    if (validPassword) {
+      res.status(200).json({ message: "valid pass" });
+    } else {
+      return res.status(400).json({ message: "invalid pass" });
+    }
   }
 });
 
@@ -129,19 +147,23 @@ const typeDefs = gql`
     second: String
   }
 
-  type ABTestResult { 
+  type ABTestResult {
     id: Int!
-    resultfirst : Int!
-    resultsecond : Int!
+    resultfirst: Int!
+    resultsecond: Int!
   }
 
   type Query {
     getAbTest(id: Int!): ABTestEntry
     getAllAbTests: [ABTestEntry]
-    getAbTestResult(id: Int!): ABTestResult 
-    setAbTestResult(id: Int!, resultfirst: Int!, resultsecond: Int!) : ABTestResult
-    getAllAbTestResults : [ABTestResult]
-    abTestChoice(  id : Int!, choice : String!) : ABTestResult
+    getAbTestResult(id: Int!): ABTestResult
+    setAbTestResult(
+      id: Int!
+      resultfirst: Int!
+      resultsecond: Int!
+    ): ABTestResult
+    getAllAbTestResults: [ABTestResult]
+    abTestChoice(id: Int!, choice: String!): ABTestResult
   }
 `;
 
@@ -170,46 +192,62 @@ const resolvers = {
         return err;
       }
     },
-    setAbTestResult : async ( parent, args) => {
+    setAbTestResult: async (parent, args) => {
       console.log(args);
-      try { 
+      try {
         const abtestresult = await prisma.abtestresults.create({
-          data : { id : args.id, resultfirst: args.resultfirst, resultsecond: args.resultsecond}
+          data: {
+            id: args.id,
+            resultfirst: args.resultfirst,
+            resultsecond: args.resultsecond,
+          },
         });
         return abtestresult;
-
-      }catch ( err) {
+      } catch (err) {
         console.log(err);
         return err;
       }
     },
-    getAbTestResult : async ( parent, args) => { 
-      console.log(args)
-      try  { 
-        const abtestresult = await prisma.abtestresults.findFirst({where : { id : args.id}})
+    getAbTestResult: async (parent, args) => {
+      console.log(args);
+      try {
+        const abtestresult = await prisma.abtestresults.findFirst({
+          where: { id: args.id },
+        });
         return abtestresult;
-      }catch(err){return err;}
+      } catch (err) {
+        return err;
+      }
     },
-    getAllAbTestResults : async ( ) => { 
-      try { 
+    getAllAbTestResults: async () => {
+      try {
         const results = await prisma.abtestresults.findMany();
         return results;
-      }catch(err) { return err;}
+      } catch (err) {
+        return err;
+      }
     },
-    abTestChoice : async (parent, args )  => { 
-      console.log( args) ;
+    abTestChoice: async (parent, args) => {
+      console.log(args);
       try {
-          const abTest = await prisma.abtestresults.findFirst({where : { id : args.id}});
-          const deletion = await prisma.abtestresults.delete({where : { id : args.id }});
-          const insertion = await prisma.abtestresults.create({ data : { 
+        const abTest = await prisma.abtestresults.findFirst({
+          where: { id: args.id },
+        });
+        const deletion = await prisma.abtestresults.delete({
+          where: { id: args.id },
+        });
+        const insertion = await prisma.abtestresults.create({
+          data: {
             resultfirst: abTest.resultfirst,
             resultsecond: abTest.resultsecond,
-            id : abTest.id
-          }});
-          return insertion;
-      } catch (err) {return err;}
-    } 
-
+            id: abTest.id,
+          },
+        });
+        return insertion;
+      } catch (err) {
+        return err;
+      }
+    },
   },
 };
 const server: ApolloServer = new ApolloServer({ typeDefs, resolvers });
