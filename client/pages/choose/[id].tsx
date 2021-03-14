@@ -2,18 +2,18 @@ import {useRouter} from "next/router";
 import {apolloClient} from "../_app"
 import {gql, useQuery} from "@apollo/client";
 
-const abChoice = ( which, id) => { 
+const abChoice = (which, id) => {
     if (which == "first") {
 
     } else {
 
     }
 };
-const ABChoiceElementFromUrl =  (props, state) => {
+const ABChoiceElementFromUrl = (props, state) => {
     return (
-        <div style={{float: "left", padding: "10", width: 200, height: 200}}>
-            <img src={props.url}/>
-            <button>Select</button>
+        <div className={"content-center"}>
+            <img className={"object-cover h-48"} src={props.url}  />
+            <button className={"py-5  rounded text-white font-bold bg-blue-500 hover:bg-blue-700 container content-end"}>Select</button>
         </div>);
 }
 
@@ -43,21 +43,24 @@ const ABTest = (props, state) => {
 
         const router = useRouter();
         const {id} = router.query;
-        state =  {
+        state = {
             id, ...state
         };
     }
-    const {loading, error, data} = useQuery(ab, {variables: {id : parseInt( state.id ) }});
+    const {loading, error, data} = useQuery(ab, {variables: {id: parseInt(state.id)}});
     if (loading) return <p>Loading</p>;
     if (error) return <p>Error</p>;
 
     console.log(data.id)
     return (
 
-        <div>
-            <p>{state.id}</p>
-            <ABChoiceElementFromUrl url={data.getAbTest.first} />
-            <ABChoiceElementFromUrl url={data.getAbTest.second} />
+        <div className="grid-cols-3 flex block px-auto  items-center  ">
+            <div className={"mx-5 my-5  max-w-lg rounded overflow-hidden shadow-lg container border w-100 "}>
+                <div className={"flex container items-center space-x-3 content-center"}>
+                    <ABChoiceElementFromUrl url={data.getAbTest.first}/>
+                    <ABChoiceElementFromUrl url={data.getAbTest.second}/>
+                </div>
+            </div>
         </div>
 
 

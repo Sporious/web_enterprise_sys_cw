@@ -2,25 +2,26 @@ import { ApolloServer, gql } from "apollo-server";
 
 import bcrypt from "bcrypt";
 
+import * as jwt from "jsonwebtoken";
+
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// A `main` function so that you can use async/await
 
-async function main() {
-  const allAccounts = await prisma.accounts.findMany();
+// async function main() {
+//   const allAccounts = await prisma.accounts.findMany();
 
-  console.log(allAccounts);
-}
+//   console.log(allAccounts);
+// }
 
-main()
-  .catch((e) => {
-    throw e;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// main()
+//   .catch((e) => {
+//     throw e;
+//   })
+//   .finally(async () => {
+//     await prisma.$disconnect();
+//   });
 
 import express, { json } from "express";
 
@@ -52,6 +53,13 @@ expressApplication.post("/create", async (req, res) => {
         salt,
       },
     });
+
+    const token = jwt.sign({ username }, "secret", { expiresIn: '1h' }, (err, token) => {
+      if (err) { console.log(err) };
+      res.send(token);
+    });
+
+
     return res.json(user);
   } catch (err) {
     console.log(err);
@@ -60,13 +68,28 @@ expressApplication.post("/create", async (req, res) => {
 });
 //read
 expressApplication.get("/allusers", async (req, res) => {
-  try {
-    const all_users = await prisma.accounts.findMany();
-    return res.json(all_users);
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json(err);
+
+
+  const tok = req.body.tok;
+  const r = jwt.verify(tok, "secret", async (err, authorisedData) => {
+    if (err) {
+      console.log('ERROR: Could not connect to the protected route');
+      res.sendStatus(403);
+    }
+    else {
+      try {
+        const all_users = await prisma.accounts.findMany();
+        return res.json(all_users);
+      } catch (err) {
+        console.log(err);
+        return res.status(400).json(err);
+      }
+    }
   }
+
+
+  );
+
 });
 
 //update
@@ -81,12 +104,12 @@ expressApplication.put("/updateuser/:uuid", async (req, res) => {
   try {
     //is there an account to update
     let record = await prisma.accounts.findFirst({
-      where: { id : parseInt(req.params.id) },
+      where: { id: parseInt(req.params.id) },
     });
     if (record) {
       let updated = await prisma.accounts.update({
         //match on uuid from request params
-        where: { id : parseInt(req.params.id)},
+        where: { id: parseInt(req.params.id) },
         data: { username, hashedPassword, salt },
       });
 
@@ -101,10 +124,10 @@ expressApplication.put("/updateuser/:uuid", async (req, res) => {
 });
 
 //delete
-expressApplication.delete("/deleteuser/:uuid", async (req, res) => {
+expressApplication.delete("/deleteuser/:id", async (req, res) => {
   try {
     let record = await prisma.accounts.delete({
-      where: {id : parseInt(req.params.id) },
+      where: { id: parseInt(req.params.id) },
     });
     return res.json(record);
   } catch (err) {
@@ -113,8 +136,12 @@ expressApplication.delete("/deleteuser/:uuid", async (req, res) => {
   }
 });
 
+
+
+
 //login
 expressApplication.post("/login", async (req, res) => {
+  console.log(JSON.stringify(req.body));
   const body = req.body;
   const user = await prisma.accounts.findUnique({
     where: { username: body.username },
@@ -125,11 +152,19 @@ expressApplication.post("/login", async (req, res) => {
       user.hashedPassword
     );
     if (validPassword) {
-      res.status(200).json({ message: "valid pass" });
+      //todo
+      const token = jwt.sign({ username: body.username }, "secret", { expiresIn: '1h' }, (err, token) => {
+        if (err) { console.log(err) };
+        res.send(token);
+      });
     } else {
       return res.status(400).json({ message: "invalid pass" });
     }
   }
+  else {
+    return res.status(400).json({ message: "account does not exist" });
+  }
+
 });
 
 //start auth app
@@ -154,8 +189,8 @@ const typeDefs = gql`
   }
 
   type Query {
-    getAbTest(id: Int!): ABTestEntry
-    getAllAbTests: [ABTestEntry]
+    getAbTest(id: Int!, tok: String!): ABTestEntry
+    getAllAbTests(tok : String!): [ABTestEntry]
     getAbTestResult(id: Int!): ABTestResult
     setAbTestResult(
       id: Int!
@@ -167,30 +202,44 @@ const typeDefs = gql`
   }
 `;
 
+
+const validate = fx => async args => await jwt.verify(args.tok, "secret", async (err, authorised) => {
+  if (err) { return err }
+  else {
+    return await fx();
+  }
+})
+
+
 //resolvers define functions to handle graphql queries
 const resolvers = {
   Query: {
     getAbTest: async (parent, args) => {
-      console.log(args.id);
-      try {
-        const abtest = await prisma.abtest.findFirst({
-          where: { id: parseInt(args.id) },
-        });
-        console.log(abtest);
-        return abtest;
-      } catch (err) {
-        console.log(err);
-        return err;
-      }
+      return await validate(async () => {
+        try {
+          const abtest = await prisma.abtest.findFirst({
+            where: { id: parseInt(args.id) }
+          });
+          console.log(abtest);
+          return abtest;
+        } catch (err) {
+          console.log(err);
+          return err;
+        }
+      })(args);
     },
-    getAllAbTests: async () => {
-      try {
-        const abtests = await prisma.abtest.findMany();
-        return abtests;
-      } catch (err) {
-        console.log(err);
-        return err;
-      }
+    getAllAbTests: async (parent, args) => {
+      return await validate(async () => {
+        console.log("jwt:", args.tok);
+        try {
+          const abtests = await prisma.abtest.findMany();
+          console.log(abtests);
+          return abtests;
+        } catch (err) {
+          console.log(err);
+          return err;
+        }
+      })(args);
     },
     setAbTestResult: async (parent, args) => {
       console.log(args);
