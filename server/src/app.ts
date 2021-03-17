@@ -54,7 +54,7 @@ expressApplication.post("/create", async (req, res) => {
       },
     });
 
-    const token = jwt.sign({ username }, "secret", { expiresIn: '1h' }, (err, token) => {
+    const token = jwt.sign({ username }, process.env.SECRET, { expiresIn: '1h' }, (err, token) => {
       if (err) { console.log(err) };
       res.send(token);
     });
@@ -71,7 +71,7 @@ expressApplication.get("/allusers", async (req, res) => {
 
 
   const tok = req.body.tok;
-  const r = jwt.verify(tok, "secret", async (err, authorisedData) => {
+  const r = jwt.verify(tok, process.env.SECRET, async (err, authorisedData) => {
     if (err) {
       console.log('ERROR: Could not connect to the protected route');
       res.sendStatus(403);
@@ -153,7 +153,7 @@ expressApplication.post("/login", async (req, res) => {
     );
     if (validPassword) {
       //todo
-      const token = jwt.sign({ username: body.username }, "secret", { expiresIn: '1h' }, (err, token) => {
+      const token = jwt.sign({ username: body.username }, process.env.SECRET, { expiresIn: '1h' }, (err, token) => {
         if (err) { console.log(err) };
         res.send(token);
       });
@@ -206,7 +206,7 @@ const typeDefs = gql`
 const validate = fx => async args => await jwt.verify(args.tok, "secret", async (err, authorised) => {
   if (err) { return err }
   else {
-    return await fx();
+    return await fx(authorised);
   }
 })
 
@@ -215,7 +215,7 @@ const validate = fx => async args => await jwt.verify(args.tok, "secret", async 
 const resolvers = {
   Query: {
     getAbTest: async (parent, args) => {
-      return await validate(async () => {
+      return await validate(async authed => {
         try {
           const abtest = await prisma.abtest.findFirst({
             where: { id: parseInt(args.id) }
@@ -229,7 +229,7 @@ const resolvers = {
       })(args);
     },
     getAllAbTests: async (parent, args) => {
-      return await validate(async () => {
+      return await validate(async authed => {
         console.log("jwt:", args.tok);
         try {
           const abtests = await prisma.abtest.findMany();

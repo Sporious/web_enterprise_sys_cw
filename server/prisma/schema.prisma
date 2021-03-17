@@ -16,7 +16,6 @@ model accounts {
   hashedPassword String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  salt String
 }
 
 
@@ -27,7 +26,11 @@ model abtest {
 }
 
 model abtestresults { 
+
   id Int @id @default(autoincrement())
-  resultfirst Int 
-  resultsecond Int 
+  testId Int
+  userId Int
+  resultFirst Int 
+  resultSecond Int 
+  millis Int
 }
