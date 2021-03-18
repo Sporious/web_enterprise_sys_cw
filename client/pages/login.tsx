@@ -17,7 +17,6 @@ export default function Login(props, state) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
 
-
             })
 
             const r = await response.json();

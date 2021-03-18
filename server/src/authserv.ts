@@ -134,7 +134,7 @@ const authserver = async () => {
         const token = jwt.sign(
           { username: body.username },
           process.env.SECRET,
-          { expiresIn: "1h" },
+          { expiresIn: "24h" },
           (err, token) => {
             if (err) {
               console.log(err);

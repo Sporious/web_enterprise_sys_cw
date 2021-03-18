@@ -33,9 +33,10 @@ const ResultElement = (props, state) => {
   console.log(props);
   return (
     <div className={"content-center"}>
-        <p>Id: {props.id}</p>
-      <img className={"object-cover h-48"} src={props.first} />
-      <img className={"object-cover h-48"} src={props.second} />
+      <p>Id: {props.id}</p>
+      <img className={"object-cover h-48 w-48"} src={props.first} />
+      <img className={"object-cover h-48 w-48"} src={props.second} />
+
       <p>{(props.millis / props.resCount).toFixed(2)} ms</p>
     </div>
   );
@@ -53,22 +54,32 @@ const ResultsFrame = (props, state) => {
 
   let collection = [];
   for (let res of data.getAllAbTestResults) {
-    let test = data.getAllAbTests.find((x) => x.id == res.id);
+    let test = data.getAllAbTests.find(x => x.id == res.id);
     if (!test) continue;
-    return (
-        <div className="grid-cols-5 flex block px-auto  items-center  ">
-            <div className={"mx-5 my-5  max-w-lg rounded overflow-hidden shadow-lg container border w-200 "}>
-      <div key={res.id} className={"flex container items-center space-x-3 content-center"}  >
-        <ResultElement
-            id={test.id}
-          first={test.first}
-          second={test.second}
-          millis={res.millis}
-          resCount={res.resCount}
-        />
-      </div></div></div>
+    collection.push(
+      <div className="grid-cols-5 flex block px-auto  items-center  ">
+        <div
+          className={
+            "mx-5 my-5  max-w-lg rounded overflow-hidden shadow-lg container border w-200 "
+          }
+        >
+          <div
+            key={res.id}
+            className={"flex container items-center space-x-3 content-center"}
+          >
+            <ResultElement
+              id={test.id}
+              first={test.first}
+              second={test.second}
+              millis={res.millis}
+              resCount={res.resCount}
+            />
+          </div>
+        </div>
+      </div>
     );
   }
+  return collection;
 };
 
 export default ResultsFrame;
