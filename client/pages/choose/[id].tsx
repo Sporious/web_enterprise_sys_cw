@@ -30,12 +30,6 @@ const ab = gql`
     }
 `;
 
-const getabtestresult = gql`
-    query Query ( $id : Int!) {
-        getAbTestResult( id : $id ) { uuid, abtest, resultfirst, resultsecond , millis}
-    }
-
-`;
 
 
 const ABTest = (props, state) => {

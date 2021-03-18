@@ -26,10 +26,9 @@ model abtest {
 }
 
 model abtestresults { 
-
   id Int @id @default(autoincrement())
-  testId Int
-  resultFirst Int 
-  resultSecond Int 
-  millis Int
+  resultFirst Int @default(0)
+  resultSecond Int @default(0)
+  millis Int @default(0)
+  resCount Int @default(0)
 }

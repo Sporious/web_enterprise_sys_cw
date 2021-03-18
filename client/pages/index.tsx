@@ -1,6 +1,5 @@
 import { GetStaticProps } from "next";
 import { useRouter } from "next/router"
-import { RenderTestRow } from "../pages/dashboard/see_ab_tests"
 import * as dotenv from "dotenv";
 import Login from "./login";
 import Link from "next/link"
@@ -43,8 +42,8 @@ const LoggedInBar = () => {
 
 const HomeBar = (props) => {
   if ( !isBrowser()) return (<NotLoggedInBar/>) 
-  const usernameMaybe = localStorage.getItem("username");
-  if (   usernameMaybe != null && usernameMaybe != undefined )     return (<NotLoggedInBar/>)
+  const usernameMaybe = props.username;
+  if (   usernameMaybe != null    && usernameMaybe != undefined )     return (<NotLoggedInBar/>)
   return (<LoggedInBar/>)
  }
 
@@ -53,7 +52,7 @@ const HomeBar = (props) => {
 class Home extends React.Component {
   static getInitialProps(ctx) {
     console.log("initial props");
-    if (!isBrowser()) return {};
+    if (!isBrowser()) return  { };
 
     return { token: localStorage.getItem("token"), username: localStorage.getItem("username") }
   }
@@ -63,6 +62,7 @@ class Home extends React.Component {
   render() {
 
     let props  = this.props;
+
 
 
     console.log("home start");
@@ -76,7 +76,7 @@ class Home extends React.Component {
           <nav className="relative flex flex-wrap items-center justify-between px-2 py-3 navbar-expand-lg bg-pink-500 rounded">
             <div className="container px-4 mx-auto flex flex-wrap items-center justify-between">
               <div className="w-full relative flex justify-between lg:w-auto px-4 lg:static lg:block lg:justify-start">
-                <HomeBar username={props.username} />
+                <HomeBar username={props.username} token={props.token} username={props.username} />
                 <button className="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none" type="button">
                   <span className="block relative w-6 h-px rounded-sm bg-white"></span>
                   <span className="block relative w-6 h-px rounded-sm bg-white mt-1"></span>

@@ -6,29 +6,23 @@ const typeDefs = gql`
     first: String
     second: String
   }
-
   type ABTestResult {
     id: Int!
-    testId : Int!
-    userId : Int!
-    resultfirst: Int!
-    resultsecond: Int!
+    resultFirst: Int!
+    resultSecond: Int!
     millis : Int!
+    resCount : Int!
   }
-
-
   type Mutation { 
     setAbTestResult(
       userId : Int!
       testId: Int!
-      resultfirst: Int!
-      resultsecond: Int!
+      resultFirst: Int!
+      resultSecond: Int!
       millis : Int !
+      resCount : Int !
     ): ABTestResult
-
-
-    abTestChoice(id: Int!, choice: String!): ABTestResult
-    
+    abTestChoice(id: Int!, choice: String!, millis : Int!, tok : String!): ABTestResult
 
   }
 
