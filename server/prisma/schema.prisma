@@ -29,7 +29,6 @@ model abtestresults {
 
   id Int @id @default(autoincrement())
   testId Int
-  userId Int
   resultFirst Int 
   resultSecond Int 
   millis Int
