@@ -215,6 +215,11 @@ const validate = fx => async args => await jwt.verify(args.tok, process.env.SECR
 })
 
 
+
+
+
+
+
 //resolvers define functions to handle graphql queries
 const resolvers = {
   Query: {

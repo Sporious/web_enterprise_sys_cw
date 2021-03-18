@@ -19,7 +19,7 @@ const NotLoggedInBar
   : () => any
   = () => {
     return (
-      <a className="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white" href="#pablo">
+      <a className="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white">
         Home
       </a>
     )
@@ -28,7 +28,7 @@ const LoggedInBar = () => {
 
   if (!isBrowser()) return;
   return (
-    <a className="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white" href="#pablo">
+    <a className="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white" >
       { localStorage.getItem("username")}
     </a>
   );
@@ -40,9 +40,11 @@ const LoggedInBar = () => {
 
 
 
+
 const HomeBar = (props) => {
   if ( !isBrowser()) return (<NotLoggedInBar/>) 
-  if (localStorage.getItem("username") == null )  return (<NotLoggedInBar/>)
+  const usernameMaybe = localStorage.getItem("username");
+  if (   usernameMaybe != null && usernameMaybe != undefined )     return (<NotLoggedInBar/>)
   return (<LoggedInBar/>)
  }
 
@@ -60,13 +62,10 @@ class Home extends React.Component {
 
   render() {
 
-    const props = this.props;
+    let props  = this.props;
 
 
     console.log("home start");
-    const domain = props.domain;
-    const clientId = props.clientId;
-    console.log(JSON.stringify({ domain, clientId }));
 
 
 

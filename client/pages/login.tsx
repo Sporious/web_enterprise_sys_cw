@@ -37,24 +37,6 @@ export default function Login(props, state) {
 
 
     }
-    // return (
-    //     <form onSubmit={login}>
-    //         <label>Username</label>
-    //         <input type="text" id="username" ></input>
-    //         <br></br>
-    //         <label>Password</label>
-    //         <input type="password" id="password" ></input>
-    //         <br></br>
-    //         <input type="submit" />
-    //
-    //     </form>
-    //
-    //
-    //
-    //
-    //
-    // )
-
 
     return (
         <div>
