@@ -1,14 +1,39 @@
 import Link from "next/link"
+import { useRouter } from "next/router";
 
 
 
 export default function Login(props, state) {
 
-    const login =async  event => {
+    const router = useRouter();
+    const login = async event => {
         event.preventDefault();
         alert(event.target.username.value)
         alert(event.target.password.value);
 
+        try {
+            const response = await fetch("/auth/login", {
+                body: JSON.stringify({ username: event.target.username.value, password: event.target.password.value }),
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+
+
+            })
+
+            const r = await response.json();
+            window.localStorage.setItem("username", r.username);
+            window.localStorage.setItem("token", r.token);
+            alert ( localStorage.getItem("username" ) + " "  + localStorage.getItem("token"));
+            router.push("/")
+
+        } catch (e) {
+
+
+            console.log(e);
+        }
+
+
+        ;
 
 
     }
@@ -48,13 +73,13 @@ export default function Login(props, state) {
                         Login
                 </button>
                 </div>
-                <div className="text-center text-md"> 
-                    
+                <div className="text-center text-md">
+
                 </div>
-                <p className="font-light">Don't have an account? </p>
+                <p className="font-light">Don't have an account?</p>
                 <Link href={"/register"}>
-                <button className="bg-indigo-600 hover:bg-blue-700 text-white font-light py-2 px-6 rounded focus:outline-none focus:shadow-outline" type="button">
-                    Create
+                    <button className="bg-indigo-600 hover:bg-blue-700 text-white font-light py-2 px-6 rounded focus:outline-none focus:shadow-outline" type="button">
+                        Create
                 </button>
                 </Link>
             </form>

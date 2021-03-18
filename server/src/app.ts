@@ -50,17 +50,15 @@ expressApplication.post("/create", async (req, res) => {
       data: {
         username,
         hashedPassword,
-        salt,
       },
     });
 
-    const token = jwt.sign({ username }, process.env.SECRET, { expiresIn: '1h' }, (err, token) => {
+     const val = await jwt.sign({ username }, process.env.SECRET, { expiresIn: '1h' }, (err, token) => {
       if (err) { console.log(err) };
-      res.send(token);
+      console.log( { username :user.username, token});
+      return res.json( { username: user.username, token } );
     });
 
-
-    return res.json(user);
   } catch (err) {
     console.log(err);
     return res.status(400).json(err);
@@ -110,7 +108,7 @@ expressApplication.put("/updateuser/:uuid", async (req, res) => {
       let updated = await prisma.accounts.update({
         //match on uuid from request params
         where: { id: parseInt(req.params.id) },
-        data: { username, hashedPassword, salt },
+        data: { username, hashedPassword },
       });
 
       return res.json(updated);
@@ -155,7 +153,7 @@ expressApplication.post("/login", async (req, res) => {
       //todo
       const token = jwt.sign({ username: body.username }, process.env.SECRET, { expiresIn: '1h' }, (err, token) => {
         if (err) { console.log(err) };
-        res.send(token);
+        res.send( { username : body.username ,  token } );
       });
     } else {
       return res.status(400).json({ message: "invalid pass" });
@@ -184,8 +182,11 @@ const typeDefs = gql`
 
   type ABTestResult {
     id: Int!
+    testId : Int!
+    userId : Int!
     resultfirst: Int!
     resultsecond: Int!
+    millis : Int!
   }
 
   type Query {
@@ -193,17 +194,20 @@ const typeDefs = gql`
     getAllAbTests(tok : String!): [ABTestEntry]
     getAbTestResult(id: Int!): ABTestResult
     setAbTestResult(
-      id: Int!
+      userId : Int!
+      testId: Int!
       resultfirst: Int!
       resultsecond: Int!
+      millis : Int !
     ): ABTestResult
+
     getAllAbTestResults: [ABTestResult]
     abTestChoice(id: Int!, choice: String!): ABTestResult
   }
 `;
 
 
-const validate = fx => async args => await jwt.verify(args.tok, "secret", async (err, authorised) => {
+const validate = fx => async args => await jwt.verify(args.tok, process.env.SECRET, async (err, authorised) => {
   if (err) { return err }
   else {
     return await fx(authorised);
@@ -243,19 +247,27 @@ const resolvers = {
     },
     setAbTestResult: async (parent, args) => {
       console.log(args);
-      try {
-        const abtestresult = await prisma.abtestresults.create({
-          data: {
-            id: args.id,
-            resultfirst: args.resultfirst,
-            resultsecond: args.resultsecond,
-          },
-        });
-        return abtestresult;
-      } catch (err) {
-        console.log(err);
-        return err;
-      }
+
+      return await validate(async authed => {
+
+        try {
+
+          const abtestresult = await prisma.abtestresults.create({
+            data: {
+              testId: args.testId,
+              userId: args.userId,
+              resultFirst: args.resultFirst,
+              resultSecond: args.resultSecond,
+              millis: args.millis
+            },
+          });
+          return abtestresult;
+        } catch (err) {
+          console.log(err);
+          return err;
+        }
+
+      });
     },
     getAbTestResult: async (parent, args) => {
       console.log(args);
@@ -287,9 +299,11 @@ const resolvers = {
         });
         const insertion = await prisma.abtestresults.create({
           data: {
-            resultfirst: abTest.resultfirst,
-            resultsecond: abTest.resultsecond,
-            id: abTest.id,
+            resultFirst: abTest.resultFirst,
+            resultSecond: abTest.resultSecond,
+            testId: abTest.testId,
+            userId: abTest.userId,
+            millis: abTest.millis
           },
         });
         return insertion;

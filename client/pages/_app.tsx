@@ -1,17 +1,23 @@
 import '../styles/global.css'
-import {ApolloProvider} from '@apollo/client';
-
+import { ApolloProvider } from '@apollo/client';
+import { CookiesProvider } from "react-cookie"
 export const apolloClient = new ApolloClient({
     uri: 'http://localhost:4000/',
     cache: new InMemoryCache()
 });
-import {ApolloClient, gql, InMemoryCache} from '@apollo/client';
+import { ApolloClient, gql, InMemoryCache } from '@apollo/client';
+
+export const isBrowser
+    = () => typeof window !== "undefined"
+
+export default function App({ Component, pageProps }) {
 
 
-export default function App({Component, pageProps}) {
     return (
-        <ApolloProvider client={apolloClient}>
-            <Component {...pageProps} />
-        </ApolloProvider>
+        <CookiesProvider>
+            <ApolloProvider client={apolloClient}>
+                <Component {...pageProps} />
+            </ApolloProvider>
+        </CookiesProvider>
     );
 }

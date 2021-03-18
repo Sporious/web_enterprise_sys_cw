@@ -1,5 +1,5 @@
 import {useRouter} from "next/router";
-import {apolloClient} from "../_app"
+import {apolloClient, isBrowser} from "../_app"
 import {gql, useQuery} from "@apollo/client";
 
 const abChoice = (which, id) => {
@@ -25,14 +25,14 @@ const allAbs = gql`
 `;
 
 const ab = gql`
-    query Query( $id : Int!) {
-        getAbTest(id: $id) { id, first, second}
+    query Query( $id : Int!, $tok : String!) {
+        getAbTest(id: $id, tok : $tok) { id, first, second}
     }
 `;
 
 const getabtestresult = gql`
     query Query ( $id : Int!) {
-        getAbTestResult( id : $id ) { uuid, abtest, resultfirst, resultsecond }
+        getAbTestResult( id : $id ) { uuid, abtest, resultfirst, resultsecond , millis}
     }
 
 `;
@@ -47,7 +47,7 @@ const ABTest = (props, state) => {
             id, ...state
         };
     }
-    const {loading, error, data} = useQuery(ab, {variables: {id: parseInt(state.id)}});
+    const {loading, error, data} = useQuery(ab, {variables: {id: parseInt(state.id), tok : (isBrowser() ?  localStorage.getItem("token")  : "") }});
     if (loading) return <p>Loading</p>;
     if (error) return <p>Error</p>;
 
