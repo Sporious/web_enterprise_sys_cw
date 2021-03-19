@@ -36,11 +36,11 @@ const authserver = async () => {
           hashedPassword,
         },
       });
-      const val = await jwt.sign(
+       await jwt.sign(
         { username },
         process.env.SECRET, //load secret from .env
         { expiresIn: "24h" }, //JWT cannot be revoked so high expiry time is a threat
-        (err, token) => {
+        async (err, token) => {
           if (err) {
             console.log(err);
           }
