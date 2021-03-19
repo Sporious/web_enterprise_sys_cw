@@ -33,3 +33,9 @@ model abtestresults {
   millis Int @default(0)
   resCount Int @default(0)
 }
+
+
+
+model jwtblacklist { 
+  jwt String @id
+}

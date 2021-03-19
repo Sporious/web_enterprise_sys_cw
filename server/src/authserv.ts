@@ -32,9 +32,9 @@ const authserver = async () => {
           hashedPassword,
         },
       });
-
+      const randomData = crypto.getRandomValues(new Uint32Array(10));
       const val = await jwt.sign(
-        { username },
+        { username, randomData },
         process.env.SECRET,
         { expiresIn: "24h" },
         (err, token) => {
@@ -53,6 +53,13 @@ const authserver = async () => {
   //read
   expressApplication.get("/allusers", async (req, res) => {
     const tok = req.body.tok;
+
+    //check if blacklisted
+    
+    const onBlacklist = await prisma.jwtblacklist.findFirst({where: {jwt: tok}}).catch(console.error);
+    if (onBlacklist) return res.status(400).json({error : "on blacklist"})
+
+
     const r = jwt.verify(
       tok,
       process.env.SECRET,
@@ -105,16 +112,35 @@ const authserver = async () => {
   });
 
   //delete
-  expressApplication.delete("/deleteuser/:id", async (req, res) => {
-    try {
-      let record = await prisma.accounts.delete({
-        where: { id: parseInt(req.params.id) },
+  expressApplication.delete("/deleteuser", async (req, res) => {
+
+    const onBlacklist = await prisma.jwtblacklist.findFirst({where: {jwt: req.body.tok}}).catch(console.error);
+    if (onBlacklist) return res.status(400).json({error : "on blacklist"})
+
+     jwt.verify( req.body.tok, process.env.SECRET, async ( err, authed) => { 
+       const { username} = authed;
+      if (!username) return res.status(400).json({"error" : "no user"})
+     try {
+
+      //Delete the account
+      const record = await prisma.accounts.deleteMany({
+        where: { username },
       });
+      console.log(record);
+      //Issued JWT's are valid, no revokation possible; blacklist best solution
+
+      const blacklisted = await prisma.jwtblacklist.create({data:{jwt: req.body.tok}});
+
+
+
       return res.json(record);
     } catch (err) {
       console.log(err);
       return res.status(400).json(err);
-    }
+    }   
+
+    });    
+    
   });
 
   //login

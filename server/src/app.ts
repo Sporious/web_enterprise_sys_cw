@@ -3,7 +3,10 @@ import { ApolloServer, gql } from "apollo-server";
 import resolvers from "./resolver"
 import typeDefs from "./typedefs"
 import authserver from "./authserv";
+import crypto from "crypto"
+
 const server: ApolloServer = new ApolloServer({ typeDefs, resolvers });
+
 Promise.all(
   [
     server.listen().then(({ url }) => console.log(`🚀 Dataserver ready at ${url}`)),

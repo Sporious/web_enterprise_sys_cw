@@ -17,12 +17,19 @@ export default function Login(props, state) {
       });
 
       const r = await response.json();
-      window.localStorage.setItem("username", r.username);
-      window.localStorage.setItem("token", r.token);
-      window.localStorage.setItem("privilege", r.privilege);
-      router.push("/");
+
+      if (r.username && r.token && r.privilege) {
+        window.localStorage.setItem("username", r.username);
+        window.localStorage.setItem("token", r.token);
+        window.localStorage.setItem("privilege", r.privilege);
+        router.push("/");
+        return;
+      } else {
+        window.localStorage.clear();
+        alert(`incorrect login`);
+      }
     } catch (e) {
-      console.log(e);
+      console.log(`login err : ${e}`);
     }
   };
 
