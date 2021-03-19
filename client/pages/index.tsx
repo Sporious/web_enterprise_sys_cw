@@ -127,12 +127,12 @@ const Home = (props, state) => {
                 {/*Admin page element*/}
                 <AdminDashboardLink privilege={state.privilege} />
                 <AccountOptionsLink
-                  username={state.username}
-                  token={state.token}
+                  username={state.username || props.username}
+                  token={state.token || props.token}
                 />
                 <li className="nav-item">
                   <a className="px-5 py-4 flex items-center text-ms uppercase font-bold leading-snug text-white hover:opacity-75">
-                    <LoginLogout username={state.username} />
+                    <LoginLogout username={state.username || props.username} />
                   </a>
                 </li>
               </ul>
@@ -147,7 +147,7 @@ const Home = (props, state) => {
 Home.getInitialProps = (ctx) => {
   console.log("initial props");
   //If server side rendering, return unspecialised props
-  if (!isBrowser()) return { token: "", username: "" };
+  if (!isBrowser()) return { token: null, username: null };
   //else return props from browser local storage
   return {
     token: localStorage.getItem("token"),
