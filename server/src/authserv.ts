@@ -128,6 +128,8 @@ const authserver = async () => {
 
     //Validate JWT
     jwt.verify(req.body.tok, process.env.SECRET, async (err, authed) => {
+
+      if (authed == undefined) return res.status(400).json({error: "auth failed"});
       const  username  = authed.username;
       if (!username) return res.status(400).json({ error: "no user" });
       else {
