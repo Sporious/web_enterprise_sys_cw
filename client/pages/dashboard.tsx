@@ -55,6 +55,7 @@ const nukeAll =async  () => {
     const confirmRes = confirm("Are you sure you want to delete all collected data?")
     if ( !confirmRes) {console.log("user pressed no to confirm"); return;}
     const response = await nukeData({variables: { tok : props.tok}}).catch(console.error);
+    localStorage.setItem("taint", "true");
     console.log(response);
 }
   return (

@@ -2,6 +2,7 @@ import { isBrowser, apolloClient } from "./_app";
 import { useQuery, gql } from "@apollo/client";
 import { pseudoRandomBytes } from "node:crypto";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 const getData = gql`
   query Query($tok: String!) {
@@ -69,11 +70,15 @@ const ResultsFrame = (props, state) => {
   if (!isBrowser()) return null;
   const token = localStorage.getItem("token");
   if (!token) return <p>Login to access this</p>;
+
+
+
   const { loading, error, data } = useQuery(getData, {
     variables: { tok: token },
   });
   if (loading) return <p>Loading</p>;
   if (error) return <p>Error</p>;
+
 
   let collection = [];
   for (let res of data.getAllAbTestResults) {
@@ -117,7 +122,4 @@ const ResultsFrame = (props, state) => {
   );
 };
 
-ResultsFrame.getInitialProps = async ctx => {
-  
-}
 export default ResultsFrame;

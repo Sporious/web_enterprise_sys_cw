@@ -69,6 +69,7 @@ const ABTest = (props, state) => {
     } catch (e) {
       console.error(e);
     } finally {
+      localStorage.setItem("taint", "true");
       router.replace(`/choose/${id + 1}`);
     }
   };
