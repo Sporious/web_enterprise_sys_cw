@@ -73,9 +73,13 @@ const ResultsFrame = (props, state) => {
 
 
 
-  const { loading, error, data } = useQuery(getData, {
+  const { loading, error, data, refetch } = useQuery(getData, {
     variables: { tok: token },
   });
+  state = { 
+    isTainted : localStorage.getItem("taint") == "true",
+    ...state
+  }
   if (loading) return <p>Loading</p>;
   if (error) return <p>Error</p>;
 
@@ -109,6 +113,8 @@ const ResultsFrame = (props, state) => {
       </div>
     );
   }
+  if ( state.isTainted) {console.log("is tainted refetching"); refetch();}
+  state = { collection , ...state}
   return (
     <div>
       <button
@@ -117,7 +123,7 @@ const ResultsFrame = (props, state) => {
       >
         Back
       </button>
-      <div className="grid sm:grid-cols-3 lg:grid-cols-6 content-start">{collection} </div>
+      <div className="grid sm:grid-cols-3 lg:grid-cols-6 content-start">{state.collection} </div>
     </div>
   );
 };
