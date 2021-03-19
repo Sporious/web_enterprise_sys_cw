@@ -37,7 +37,7 @@ const authserver = async () => {
         },
       });
        await jwt.sign(
-        { username },
+          { username }  ,
         process.env.SECRET, //load secret from .env
         { expiresIn: "24h" }, //JWT cannot be revoked so high expiry time is a threat
         async (err, token) => {
@@ -128,7 +128,7 @@ const authserver = async () => {
 
     //Validate JWT
     jwt.verify(req.body.tok, process.env.SECRET, async (err, authed) => {
-      const { username } = authed;
+      const  username  = authed.username;
       if (!username) return res.status(400).json({ error: "no user" });
       else {
       try {
@@ -175,7 +175,7 @@ const authserver = async () => {
       if (validPassword) {
         //If valid generate a new JWT and send it and other user data back to client
         jwt.sign(
-          { username: body.username },
+             { username :  body.username }  ,
           process.env.SECRET,
           { expiresIn: "24h" },
           (err, token) => {
