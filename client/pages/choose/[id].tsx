@@ -66,7 +66,6 @@ const ABTest = (props, state) => {
         variables: { id, tok, choice, millis: difference },
       });
       console.log(result);
-      alert("choice");
     } catch (e) {
       console.error(e);
     } finally {

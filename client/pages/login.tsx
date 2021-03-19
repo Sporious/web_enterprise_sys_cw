@@ -5,8 +5,6 @@ export default function Login(props, state) {
   const router = useRouter();
   const login = async (event) => {
     event.preventDefault();
-    alert(event.target.username.value);
-    alert(event.target.password.value);
 
     try {
       const response = await fetch("/auth/login", {
@@ -21,9 +19,7 @@ export default function Login(props, state) {
       const r = await response.json();
       window.localStorage.setItem("username", r.username);
       window.localStorage.setItem("token", r.token);
-      alert(
-        localStorage.getItem("username") + " " + localStorage.getItem("token")
-      );
+      window.localStorage.setItem("privilege", r.privilege);
       router.push("/");
     } catch (e) {
       console.log(e);

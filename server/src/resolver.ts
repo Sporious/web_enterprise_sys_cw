@@ -3,16 +3,46 @@ import bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
-const validate = (fx) => async (args) =>
-  await jwt.verify(args.tok, process.env.SECRET, async (err, authorised) => {
+const validate = fx => async args => {
+  console.error("in validate");
+  return jwt.verify(args.tok, process.env.SECRET, async (err, authorised) => {
     if (err) {
+      console.error(err);
       return err;
     } else {
       return await fx(authorised);
     }
   });
+};
+const adminOnly = fx => async user => {
+  const username = user.username;
+  if (!username) throw "no username";
+  const account = await prisma.accounts.findFirst({ where: { username } });
+  if (account && account.privilege == "admin") return await fx(user);
+  throw "user is not an admin";
+};
+
 const resolvers = {
   Mutation: {
+    // addAbTest: async (parent, args) => {
+    //   console.log(`in addabtest`)
+    //   validate( async authed => {
+
+    //     console.log(`validated`)
+
+    //     adminOnly( async admin => {
+    //       console.log(`admin authed`)
+    //     })(authed)
+    //   })(args)
+    addAbTest: async (parent, args) =>
+      validate(
+        adminOnly(async admin => {
+
+          console.log(`admin authed ${admin.username}`);
+          return await prisma.abtest.create({data: { first: args.first, second: args.second}}).catch(console.error)
+
+        })
+      )(args),
     setAbTestResult: async (parent, args) => {
       console.log(args);
       return;
@@ -61,7 +91,7 @@ const resolvers = {
                     resultFirst: 1,
                     resultSecond: 0,
                     millis: args.millis,
-                    resCount: 0,
+                    resCount: 1,
                   },
                 });
 
@@ -72,7 +102,7 @@ const resolvers = {
                     resultFirst: 0,
                     resultSecond: 1,
                     millis: args.millis,
-                    resCount: 0,
+                    resCount: 1,
                   },
                 });
               default:

@@ -20,9 +20,9 @@ export default function Register(props, state) {
             });
 
         console.log(response);
-        alert(response.username);
         localStorage.setItem("username", response.username);
         localStorage.setItem("token", response.token);
+      window.localStorage.setItem("privilege", response.privilege);
             router.push("/")
       
         

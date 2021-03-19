@@ -19,10 +19,10 @@ const authserver = async () => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     try {
-      const existing_user = await prisma.accounts.findFirst({
+      const existingUser = await prisma.accounts.findFirst({
         where: { username },
       });
-      if (existing_user) {
+      if (existingUser) {
         throw { name: "Account exists" };
       }
 
@@ -36,13 +36,13 @@ const authserver = async () => {
       const val = await jwt.sign(
         { username },
         process.env.SECRET,
-        { expiresIn: "1h" },
+        { expiresIn: "24h" },
         (err, token) => {
           if (err) {
             console.log(err);
           }
           console.log({ username: user.username, token });
-          return res.json({ username: user.username, token });
+          return res.json({ username: user.username, token, privilege : user.privilege });
         }
       );
     } catch (err) {
@@ -121,17 +121,19 @@ const authserver = async () => {
   expressApplication.post("/login", async (req, res) => {
     console.log(JSON.stringify(req.body));
     const body = req.body;
-    const user = await prisma.accounts.findUnique({
+    const user = await prisma.accounts.findFirst({
       where: { username: body.username },
     });
+    console.log(user);
     if (user) {
+      console.log(`body pass : ${body.password}`);
       const validPassword = await bcrypt.compare(
         body.password,
         user.hashedPassword
       );
       if (validPassword) {
         //todo
-        const token = jwt.sign(
+         jwt.sign(
           { username: body.username },
           process.env.SECRET,
           { expiresIn: "24h" },
@@ -139,7 +141,7 @@ const authserver = async () => {
             if (err) {
               console.log(err);
             }
-            res.send({ username: body.username, token });
+           return  res.json({ username: body.username, token, privilege : user.privilege || "user" });
           }
         );
       } else {

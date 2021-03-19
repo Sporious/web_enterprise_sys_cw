@@ -19,7 +19,7 @@ const NotLoggedInBar: () => any = () => {
   );
 };
 const LoggedInBar = () => {
-  if (!isBrowser()) return;
+  if (!isBrowser()) return null;
   return (
     <a className="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white">
       {localStorage.getItem("username")}
@@ -47,8 +47,8 @@ const Home = (props, state) => {
     };
   }
   console.log("home start");
-  const LoginLogout = () => {
-    if (!state.username) return <Link href={"/login"}>Login</Link>;
+  const LoginLogout = (props, state) => {
+    if (props.username == undefined || props.username == null) return <Link href={"/login"}>Login</Link>;
     return <Link href={"/logout"}>Logout</Link>;
   };
   return (
@@ -84,7 +84,7 @@ const Home = (props, state) => {
                 </li>
                 <li className="nav-item">
                   <a className="px-5 py-4 flex items-center text-ms uppercase font-bold leading-snug text-white hover:opacity-75">
-                    <LoginLogout />
+                    <LoginLogout  username={state.username}/>
                   </a>
                 </li>
               </ul>

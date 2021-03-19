@@ -24,6 +24,9 @@ const typeDefs = gql`
     ): ABTestResult
     abTestChoice(id: Int!, choice: String!, millis : Int!, tok : String!): ABTestResult
 
+
+    addAbTest(first: String!, second: String!, tok: String!) : ABTestEntry
+
   }
 
 
