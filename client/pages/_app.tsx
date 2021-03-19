@@ -7,6 +7,7 @@ export const apolloClient = new ApolloClient({
 });
 import { ApolloClient, gql, InMemoryCache } from '@apollo/client';
 
+  export const handleBack = () => router.replace("/");
 export const isBrowser
     = () => typeof window !== "undefined"
 

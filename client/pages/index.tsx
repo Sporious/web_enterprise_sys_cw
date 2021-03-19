@@ -37,19 +37,50 @@ const Home = (props, state) => {
   state = {
     token: props.token,
     username: props.username,
+    privilege: props.privilege,
     ...state,
   };
   if (isBrowser()) {
     state = {
       token: localStorage.getItem("token"),
       username: localStorage.getItem("username"),
+      privilege: localStorage.getItem("privilege"),
       ...state,
     };
   }
   console.log("home start");
   const LoginLogout = (props, state) => {
-    if (props.username == undefined || props.username == null) return <Link href={"/login"}>Login</Link>;
+    if (props.username == undefined || props.username == null)
+      return <Link href={"/login"}>Login</Link>;
     return <Link href={"/logout"}>Logout</Link>;
+  };
+
+  const AdminDashboardLink = (props) => {
+    if (props.privilege == "admin")
+      return (
+        <div>
+          <li className="nav-item">
+            <a className="px-5 py-4 flex items-center text-ms uppercase font-bold leading-snug text-white hover:opacity-75">
+              <Link href={"/dashboard"}>Admin</Link>
+            </a>
+          </li>
+        </div>
+      );
+    return null;
+  };
+
+  const AccountOptionsLink = (props) => {
+    //if (!props.username || !props.token) return null;
+    if (props.username==null || props.username == undefined) return null;
+    return (
+      <div>
+        <li className="nav-item">
+          <a className="px-5 py-4 flex items-center text-ms uppercase font-bold leading-snug text-white hover:opacity-75">
+            <Link href={"/account"}>Account</Link>
+          </a>
+        </li>
+      </div>
+    );
   };
   return (
     <div className="flex flex-wrap py-2">
@@ -79,12 +110,18 @@ const Home = (props, state) => {
                 </li>
                 <li className="nav-item">
                   <a className="px-5 py-4 flex items-center text-ms uppercase font-bold leading-snug text-white hover:opacity-75">
-                    Admin
+                    <Link href={"/results"}>Results</Link>
                   </a>
                 </li>
+
+                <AdminDashboardLink privilege={state.privilege} />
+                <AccountOptionsLink
+                  username={state.username}
+                  token={state.token}
+                />
                 <li className="nav-item">
                   <a className="px-5 py-4 flex items-center text-ms uppercase font-bold leading-snug text-white hover:opacity-75">
-                    <LoginLogout  username={state.username}/>
+                    <LoginLogout username={state.username} />
                   </a>
                 </li>
               </ul>
@@ -102,6 +139,7 @@ Home.getInitialProps = (ctx) => {
   return {
     token: localStorage.getItem("token"),
     username: localStorage.getItem("username"),
+    privilege: localStorage.getItem("privilege"),
   };
 };
 export default Home;

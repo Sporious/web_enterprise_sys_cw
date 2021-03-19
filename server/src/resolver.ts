@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
-const validate = fx => async args => {
+const validate = (fx) => async (args) => {
   console.error("in validate");
   return jwt.verify(args.tok, process.env.SECRET, async (err, authorised) => {
     if (err) {
@@ -14,7 +14,7 @@ const validate = fx => async args => {
     }
   });
 };
-const adminOnly = fx => async user => {
+const adminOnly = (fx) => async (user) => {
   const username = user.username;
   if (!username) throw "no username";
   const account = await prisma.accounts.findFirst({ where: { username } });
@@ -36,13 +36,46 @@ const resolvers = {
     //   })(args)
     addAbTest: async (parent, args) =>
       validate(
-        adminOnly(async admin => {
-
+        adminOnly(async (admin) => {
           console.log(`admin authed ${admin.username}`);
-          return await prisma.abtest.create({data: { first: args.first, second: args.second}}).catch(console.error)
-
+          return await prisma.abtest
+            .create({ data: { first: args.first, second: args.second } })
+            .catch( e => console.error ( `error creating test ${e}`));
         })
       )(args),
+
+    nukeTestResult: async (parent, args) =>
+      validate(
+        adminOnly(async (admin) => {
+          console.log(`admin authed ${admin.username}`);
+          const val = await prisma.abtestresults
+            .upsert({
+              where: { id: args.id },
+              update: {
+                resCount: 0,
+                resultFirst: 0,
+                resultSecond: 0,
+                millis: 0,
+              },
+              create: {
+                millis: 0,
+                resCount: 0,
+                resultFirst: 0,
+                resultSecond: 0,
+              },
+            })
+            .catch(console.error);
+          console.log(val);
+          return val;
+        })
+      )(args),
+    nukeAllTestResults: async (parent, args) => {
+      validate(
+        adminOnly(async (admin) => {
+          return await prisma.abtestresults.deleteMany().catch(console.error);
+        })
+      )(args);
+    },
     setAbTestResult: async (parent, args) => {
       console.log(args);
       return;

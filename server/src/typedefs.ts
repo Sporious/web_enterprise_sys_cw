@@ -27,6 +27,12 @@ const typeDefs = gql`
 
     addAbTest(first: String!, second: String!, tok: String!) : ABTestEntry
 
+
+
+    nukeTestResult(id : Int!, tok: String!) : ABTestResult
+
+    nukeAllTestResults( tok : String!) : [ABTestResult]
+
   }
 
 
