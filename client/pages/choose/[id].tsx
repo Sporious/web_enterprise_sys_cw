@@ -31,25 +31,29 @@ const ab = gql`
   }
 `;
 const ABTest = (props, state) => {
-
-
-  const router = useRouter()
+  const router = useRouter();
   //If first render save id from router
   if (!state.id) {
     const { id } = router.query;
     state = {
       id,
+      token: localStorage.getItem("token"),
+      username: localStorage.getItem("username"),
       ...state,
     };
   }
 
- 
+  if (!state.token) {
+    setTimeout(() => router.replace("/"), 2000);
+    return (
+      <a className="m-8 px-25 py-25 flex items-center text-lg uppercase font-bold leading-snug text-black hover:opacity-75">
+        Log in to access
+      </a>
+    );
+  }
+
   const [makeChoice] = useMutation(abTestChoice);
   const startTime = new Date();
-
-  
-
-
 
   if (!isBrowser()) return null;
   const tok = localStorage.getItem("token");
@@ -65,9 +69,8 @@ const ABTest = (props, state) => {
       alert("choice");
     } catch (e) {
       console.error(e);
-    }
-    finally { 
-      router.replace(`/choose/${id + 1}`)
+    } finally {
+      router.replace(`/choose/${id + 1}`);
     }
   };
   const ABChoiceElementFromUrl = (props, state) => {
@@ -86,7 +89,7 @@ const ABTest = (props, state) => {
     );
   };
 
- const { loading, error, data } = useQuery(ab, {
+  const { loading, error, data } = useQuery(ab, {
     variables: {
       id: parseInt(state.id),
       tok: isBrowser() ? localStorage.getItem("token") : "",
@@ -96,14 +99,12 @@ const ABTest = (props, state) => {
   if (error) return <p>Error</p>;
   console.log(data.id);
 
-
-  if (data.getAbTest == null) { 
+  if (data.getAbTest == null) {
     //Finished presenting options to user, return to main page
 
-    router.replace("/")
+    router.replace("/");
     return null;
   }
-
 
   return (
     <div className="grid-cols-3 flex block px-auto  items-center  ">
@@ -113,7 +114,11 @@ const ABTest = (props, state) => {
         }
       >
         <div className={"flex container items-center space-x-3 content-center"}>
-          <ABChoiceElementFromUrl url={data.getAbTest.first} choice={"first"} id={state.id} />
+          <ABChoiceElementFromUrl
+            url={data.getAbTest.first}
+            choice={"first"}
+            id={state.id}
+          />
           <ABChoiceElementFromUrl
             url={data.getAbTest.second}
             choice={"second"}
