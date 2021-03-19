@@ -69,8 +69,9 @@ const ResultsFrame = (props, state) => {
   const handleBack = () => router.replace("/");
   if (!isBrowser()) return null;
   const token = localStorage.getItem("token");
-  if (!token) return <p>Login to access this</p>;
-
+  if (!token || token.length < 2) return  <a className="m-8 px-25 py-25 flex items-center text-lg uppercase font-bold leading-snug text-black hover:opacity-75">
+  Log in to access
+</a>  ;
 
 
   const { loading, error, data, refetch } = useQuery(getData, {

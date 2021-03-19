@@ -4,7 +4,6 @@ import { PrismaClient } from "@prisma/client";
 
 import * as jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
-
 const authserver = async () => {
   //users
   const expressApplication = express();
@@ -32,9 +31,8 @@ const authserver = async () => {
           hashedPassword,
         },
       });
-      const randomData = crypto.getRandomValues(new Uint32Array(10));
       const val = await jwt.sign(
-        { username, randomData },
+        { username },
         process.env.SECRET,
         { expiresIn: "24h" },
         (err, token) => {
@@ -69,8 +67,8 @@ const authserver = async () => {
           res.sendStatus(403);
         } else {
           try {
-            const all_users = await prisma.accounts.findMany();
-            return res.json(all_users);
+            const allUsers = await prisma.accounts.findMany();
+            return res.json(allUsers);
           } catch (err) {
             console.log(err);
             return res.status(400).json(err);
@@ -145,12 +143,15 @@ const authserver = async () => {
 
   //login
   expressApplication.post("/login", async (req, res) => {
+
     console.log(JSON.stringify(req.body));
     const body = req.body;
     const user = await prisma.accounts.findFirst({
       where: { username: body.username },
     });
     console.log(user);
+
+    
     if (user) {
       console.log(`body pass : ${body.password}`);
       const validPassword = await bcrypt.compare(
@@ -160,7 +161,7 @@ const authserver = async () => {
       if (validPassword) {
         //todo
          jwt.sign(
-          { username: body.username },
+          { username: body.username},
           process.env.SECRET,
           { expiresIn: "24h" },
           (err, token) => {
