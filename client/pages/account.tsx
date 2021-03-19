@@ -75,8 +75,8 @@ const AccountPage = (props, state) => {
 
 AccountPage.getInitialProps = (ctx) => {
   //If SSR return generic props
-  if (!isBrowser()) return {};
-  return {
+  if (!isBrowser()) return { username: null, token : null, privilege : null  };
+  return { 
     username: localStorage.getItem("username"),
     token: localStorage.getItem("token"),
     privilege : localStorage.getItem("privilege")
