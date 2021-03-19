@@ -130,11 +130,12 @@ const authserver = async () => {
     jwt.verify(req.body.tok, process.env.SECRET, async (err, authed) => {
       const { username } = authed;
       if (!username) return res.status(400).json({ error: "no user" });
+      else {
       try {
         //Delete the account
         const record = await prisma.accounts.deleteMany({
           where: { username },
-        });
+        }).catch(console.error);
         console.log(record);
 
         //Issued JWT's are valid, no revokation possible; denylist best solution
@@ -149,7 +150,7 @@ const authserver = async () => {
         console.log(err);
         return res.status(400).json(err);
       }
-    });
+    }});
   });
 
   //login
