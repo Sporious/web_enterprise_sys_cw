@@ -42,7 +42,7 @@ const AccountPage = (props, state) => {
     props.token == undefined||
     props.privilege == null || props.privilege == undefined
   ) {
-    setTimeout(() => router.replace("/"), 2000);
+  //  setTimeout(() => router.replace("/"), 2000);
     return (
       <a className="m-8 px-25 py-25 flex items-center text-lg uppercase font-bold leading-snug text-black hover:opacity-75">
         Not logged in
