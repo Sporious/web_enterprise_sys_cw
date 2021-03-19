@@ -1,18 +1,22 @@
 import { useRouter } from "next/router";
+//Registation page element
 export default function Register(props, state) {
   const router = useRouter();
+
+  //Register callback
   const register = async (event) => {
     event.preventDefault();
     const body = {
       username: event.target.username.value,
       password: event.target.password.value,
     };
+    //Send request to correct path
     const response = await fetch("/auth/create", {
       body: JSON.stringify(body),
       method: "POST",
       headers: { "Content-Type": "application/json" },
     })
-      .then((r) => r.json())
+      .then((r) => r.json()) //parse response as json
       .catch((e) => {
         console.log("create user error");
         console.log(e);
@@ -23,12 +27,13 @@ export default function Register(props, state) {
       return;
     }
     console.log(response);
-    localStorage.setItem("username", response.username);
+    localStorage.setItem("username", response.username); //If we've received a username, token and privilege assign them to localstorage
     localStorage.setItem("token", response.token);
     window.localStorage.setItem("privilege", response.privilege);
-    router.push("/");
+    router.push("/"); //then redirect to index page
   };
 
+  //Register page html
   return (
     <div>
       <form onSubmit={register}>

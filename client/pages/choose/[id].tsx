@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { apolloClient, isBrowser } from "../_app";
 import { gql, useMutation, useQuery } from "@apollo/client";
 
+//graphQL mutation to make a choice for a test
 const abTestChoice = gql`
   mutation Mutation($id: Int!, $tok: String!, $choice: String!, $millis: Int!) {
     abTestChoice(id: $id, choice: $choice, millis: $millis, tok: $tok) {
@@ -13,6 +14,8 @@ const abTestChoice = gql`
     }
   }
 `;
+
+//graphQL query to get all tests
 const allAbs = gql`
   query Query {
     getAllAbTests {
@@ -21,6 +24,7 @@ const allAbs = gql`
   }
 `;
 
+//graphQL query  to get an AB test
 const ab = gql`
   query Query($id: Int!, $tok: String!) {
     getAbTest(id: $id, tok: $tok) {
@@ -30,11 +34,13 @@ const ab = gql`
     }
   }
 `;
+//Main page component
 const ABTest = (props, state) => {
   const router = useRouter();
+  if (!isBrowser()) return null;
   //If first render save id from router
   if (!state.id) {
-    const { id } = router.query;
+    const { id } = router.query; //Get route [id] param from the router query
     state = {
       id,
       token: localStorage.getItem("token"),
@@ -43,8 +49,9 @@ const ABTest = (props, state) => {
     };
   }
 
+  //No token go away, this is members only
   if (!state.token) {
-    setTimeout(() => router.replace("/"), 2000);
+    setTimeout(() => router.replace("/"), 2000); //return to index after 2s
     return (
       <a className="m-8 px-25 py-25 flex items-center text-lg uppercase font-bold leading-snug text-black hover:opacity-75">
         Log in to access
@@ -52,16 +59,20 @@ const ABTest = (props, state) => {
     );
   }
 
+  //get graphQL mutation callback
   const [makeChoice] = useMutation(abTestChoice);
-  const startTime = new Date();
 
-  if (!isBrowser()) return null;
+  const startTime = new Date(); //This time determines the first oppertunity the user has to make the choice,
+  //this is used to measure how quickly the user decides
+
   const tok = localStorage.getItem("token");
 
+  //Callback for the choice button
   const abChoice = (id, choice) => async (event) => {
-    const now = new Date();
-    const difference = now.getTime() - startTime.getTime();
+    const now = new Date(); //When was button pressed
+    const difference = now.getTime() - startTime.getTime(); //How long since the option loaded
     try {
+      //initialise graphQL mutation
       const result = await makeChoice({
         variables: { id, tok, choice, millis: difference },
       });
@@ -69,10 +80,13 @@ const ABTest = (props, state) => {
     } catch (e) {
       console.error(e);
     } finally {
-      localStorage.setItem("taint", "true");
-      router.replace(`/choose/${id + 1}`);
+      localStorage.setItem("taint", "true"); //Making a choice may invalidate our cache, this is used to force graphQL to reload
+      //this one works without its just for safety
+
+      router.replace(`/choose/${id + 1}`);  //Move to next AB test immediately
     }
   };
+  //UI component for each AB choice
   const ABChoiceElementFromUrl = (props, state) => {
     return (
       <div className={"content-center"}>
@@ -89,6 +103,8 @@ const ABTest = (props, state) => {
     );
   };
 
+
+  //use graphQL query to get AB test data from server
   const { loading, error, data } = useQuery(ab, {
     variables: {
       id: parseInt(state.id),
@@ -99,6 +115,8 @@ const ABTest = (props, state) => {
   if (error) return <p>Error</p>;
   console.log(data.id);
 
+
+    //Is there no test data available for this ID (aka are we at the end of the list)
   if (data.getAbTest == null) {
     //Finished presenting options to user, return to main page
 

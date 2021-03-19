@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+
+
+//This component control the login form
 export default function Login(props, state) {
   const router = useRouter();
+  //login callback for form submit button
   const login = async (event) => {
     event.preventDefault();
-
     try {
+
+      //Send REST POST request to auth server
       const response = await fetch("/auth/login", {
         body: JSON.stringify({
           username: event.target.username.value,
@@ -15,17 +20,15 @@ export default function Login(props, state) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
-
-      const r = await response.json();
-
+      const r = await response.json(); //Parse body of response as json
       if (r.username && r.token && r.privilege) {
         window.localStorage.setItem("username", r.username);
         window.localStorage.setItem("token", r.token);
         window.localStorage.setItem("privilege", r.privilege);
-        router.push("/");
+        router.push("/"); //Redirect to index
         return;
       } else {
-        window.localStorage.clear();
+        window.localStorage.clear(); //Incase login fails just clear storage to make sure we're completely logged out
         alert(`incorrect login`);
       }
     } catch (e) {

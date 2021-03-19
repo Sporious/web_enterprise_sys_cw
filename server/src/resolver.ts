@@ -2,48 +2,51 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 
+//Connect to prisma and postgresql
 const prisma = new PrismaClient();
+
+//This function executes a callback after checking for a valid user account
 const validate = (fx) => async (args) => {
   console.error("in validate");
-  return jwt.verify(args.tok, process.env.SECRET, async (err, authorised) => {
+  return jwt.verify(args.tok, process.env.SECRET, async (err, authorised) => { //Check user auth
     if (err) {
       console.error(err);
       return err;
     } else {
-      return await fx(authorised);
+      return await fx(authorised); //if ok pass though and await callback
     }
   });
 };
+
+//This function can be used inside validate to check for superuser access / admin access
 const adminOnly = (fx) => async (user) => {
   const username = user.username;
   if (!username) throw "no username";
-  const account = await prisma.accounts.findFirst({ where: { username } });
+  const account = await prisma.accounts.findFirst({ where: { username } }); //Check that user privilege is admin
   if (account && account.privilege == "admin") return await fx(user);
   throw "user is not an admin";
 };
 
+
+//These are the GraphQL resolvers
+//This provides functions to resolve and handle the queries and mutations defined in the GraphQL schema in typedefs.ts
 const resolvers = {
+  //A mutation can change/add/delete records
   Mutation: {
-    // addAbTest: async (parent, args) => {
-    //   console.log(`in addabtest`)
-    //   validate( async authed => {
-
-    //     console.log(`validated`)
-
-    //     adminOnly( async admin => {
-    //       console.log(`admin authed`)
-    //     })(authed)
-    //   })(args)
+    //  addAbTest(first: String!, second: String!, tok: String!) : ABTestEntry
+    //      adds a new AB test to the system at the end of the list
     addAbTest: async (parent, args) =>
-      validate(
-        adminOnly(async (admin) => {
+      validate( //Check logged in
+        adminOnly(async (admin) => { //Check logged in user is admin
           console.log(`admin authed ${admin.username}`);
           return await prisma.abtest
             .create({ data: { first: args.first, second: args.second } })
-            .catch( e => console.error ( `error creating test ${e}`));
+            .catch( e => console.error ( `error creating test ${e}`)); //Add the AB test to the abtest model with prisma
         })
-      )(args),
-
+      )(args) //invoke on args, function is curried
+      ,
+      //nukeAllTestResults( tok : String!) : [ABTestResult]
+      //  Reset specific test result by id
     nukeTestResult: async (parent, args) =>
       validate(
         adminOnly(async (admin) => {
@@ -69,21 +72,28 @@ const resolvers = {
           return val;
         })
       )(args),
+
+    //nukeAllTestResults( tok : String!) : [ABTestResult]
+    //  deletes all test results regardless of test or user
     nukeAllTestResults: async (parent, args) => {
       validate(
-        adminOnly(async (admin) => {
+        adminOnly(async (admin) => { //Requires admin
           return await prisma.abtestresults.deleteMany().catch(console.error);
         })
       )(args);
     },
+    //Set the result for a test
     setAbTestResult: async (parent, args) => {
       console.log(args);
       return;
     },
+
+    //abTestChoice(id: Int!, choice: String!, millis : Int!, tok : String!): ABTestResult
+    //  Create a choice for a test
     abTestChoice: async (parent, args) => {
       console.log(args);
 
-      return await validate(async (authed) => {
+      return await validate(async (authed) => { //ensure logged in
         try {
           const record = await prisma.abtestresults.findFirst({
             where: { id: args.id },
@@ -150,7 +160,11 @@ const resolvers = {
       })(args);
     },
   },
+
+  //Queries are GraphQL actions that are read-only
   Query: {
+    //getAbTest(id: Int!, tok: String!): ABTestEntry
+    //  get AB test from server
     getAbTest: async (parent, args) => {
       return await validate(async (authed) => {
         try {
@@ -165,11 +179,13 @@ const resolvers = {
         }
       })(args);
     },
+   //getAllAbTests(tok : String!): [ABTestEntry]
+    //  Get all the AB tests as a set
     getAllAbTests: async (parent, args) => {
-      return await validate(async (authed) => {
+      return await validate(async (authed) => { //ensure logged in
         console.log("jwt:", args.tok);
         try {
-          const abtests = await prisma.abtest.findMany();
+          const abtests = await prisma.abtest.findMany();//get all tests
           console.log(abtests);
           return abtests;
         } catch (err) {
@@ -178,7 +194,7 @@ const resolvers = {
         }
       })(args);
     },
-
+    //get result for specific test
     getAbTestResult: async (parent, args) => {
       console.log(args);
       try {
@@ -190,9 +206,10 @@ const resolvers = {
         return err;
       }
     },
+    //get result for all AB tests as set
     getAllAbTestResults: async () => {
       try {
-        const results = await prisma.abtestresults.findMany();
+        const results = await prisma.abtestresults.findMany(); //Find any result regardless of criteria
         return results;
       } catch (err) {
         return err;

@@ -1,5 +1,8 @@
 import { gql } from "apollo-server";
 
+
+//Typedefs  defines graphql schema
+
 const typeDefs = gql`
   type ABTestEntry {
     id: Int!
@@ -26,9 +29,6 @@ const typeDefs = gql`
 
 
     addAbTest(first: String!, second: String!, tok: String!) : ABTestEntry
-
-
-
     nukeTestResult(id : Int!, tok: String!) : ABTestResult
 
     nukeAllTestResults( tok : String!) : [ABTestResult]

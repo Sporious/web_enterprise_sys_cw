@@ -2,26 +2,37 @@ import { gql } from "@apollo/client";
 import { useRouter } from "next/router";
 import { isBrowser } from "./_app";
 
+//Account page
 const AccountPage = (props, state) => {
+
+  //NextJS router allows controlling the URL bar and redirecting
   const router = useRouter();
+
+  //If we press back, return to index
   const handleBack = () => router.replace("/");
+
+  //Callback to delete account
   const deleteMyAccount = async (event) => {
+
     event.preventDefault();
+    //Validate the user wants to delete their account
     const ok = confirm("Continue?");
     if ( !ok) { return;}
+    //Send request to the auth server, path is proxied by routes set in next.config.js
     const response = await fetch("/auth/deleteuser", {
       body: JSON.stringify({
+        //Provide the token to identify the user
         tok: props.tok,
       }),
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      method: "DELETE", //REST method
+      headers: { "Content-Type": "application/json" } //Body is JSON encoded,
     });
 
 
     console.log(response);
     alert("Success?");
-    localStorage.clear();
-    setTimeout( () => router.replace("/"), 1000);
+    localStorage.clear(); //Account deleted, clear up client localstorage
+    setTimeout( () => router.replace("/"), 1000); //Redirect to index after 1000ms
     return;
   };
   if (
@@ -56,9 +67,6 @@ const AccountPage = (props, state) => {
         >
           Delete my account
         </button>
-
-
-
       <p  className="m-2 px-25 py-25 flex items-center text-lg uppercase font-bold leading-snug text-black hover:opacity-75 " >User account level: { props.privilege}</p>
       </div>
     );
@@ -66,6 +74,7 @@ const AccountPage = (props, state) => {
 };
 
 AccountPage.getInitialProps = (ctx) => {
+  //If SSR return generic props
   if (!isBrowser()) return {};
   return {
     username: localStorage.getItem("username"),
